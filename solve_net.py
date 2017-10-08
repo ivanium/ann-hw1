@@ -2,7 +2,7 @@ from utils import LOG_INFO, onehot_encoding, calculate_acc
 import numpy as np
 
 
-def data_iterator(x, y, batch_size, shuffle=True):
+def data_iterator(x, y, batch_size, shuffle=True):  #fetch data batch of batch_size
     indx = range(len(x))
     if shuffle:
         np.random.shuffle(indx)

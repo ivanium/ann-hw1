@@ -29,12 +29,12 @@ class Relu(Layer):
 
     def forward(self, input):
         '''Your codes here'''
-        pass
+        self._saved_for_backward(input)
+        return input * (input > 0)
 
     def backward(self, grad_output):
         '''Your codes here'''
-        pass
-
+        return (grad_output > 0)
 
 class Sigmoid(Layer):
     def __init__(self, name):
@@ -42,11 +42,14 @@ class Sigmoid(Layer):
 
     def forward(self, input):
         '''Your codes here'''
-        pass
+        output = 1 / (1 + np.exp(-input))
+        self._saved_for_backward(output)
+        return output
 
     def backward(self, grad_output):
         '''Your codes here'''
-        pass
+        prev_output = self._saved_tensor
+        return prev_output * (1 - prev_output) * grad_output
 
 
 class Linear(Layer):
@@ -65,11 +68,23 @@ class Linear(Layer):
 
     def forward(self, input):
         '''Your codes here'''
-        pass
+        self._saved_for_backward(input)
+        return input.dot(self.W) + self.b
 
     def backward(self, grad_output):
         '''Your codes here'''
-        pass
+        # compute grad and change self.diff_w
+        input = self._saved_tensor
+        batch_size, in_num = input.shape
+        out_num = grad_output.shape[1]
+
+        self.grad_W = np.zeros((in_num, out_num))
+        self.grad_b = np.zeros(out_num)
+        
+        for i in xrange(batch_size):
+            self.grad_W += input[i].reshape(in_num, 1).dot(grad_output[i].reshape(1,out_num))
+            self.grad_b += grad_output[i]
+        return grad_output.dot(self.W.T)
 
     def update(self, config):
         mm = config['momentum']
